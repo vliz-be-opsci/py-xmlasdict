@@ -88,8 +88,8 @@ class TestBasicCases(unittest.TestCase):
     def test_attributes(self):
         # check addressing test_attributes
         xdict = parse("<r top='me'><child type='some'/></r>")
-        assert xdict['@top'] == 'me', "error accessing root attibute"
-        assert xdict.child['@type'] == 'some', "error accessing child attibute"
+        assert xdict['@top'] == 'me', "error accessing root attribute"
+        assert xdict.child['@type'] == 'some', "error accessing child attribute"
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
