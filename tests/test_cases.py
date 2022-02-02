@@ -27,6 +27,12 @@ class TestBasicCases(unittest.TestCase):
         # should allow running through all the keys (i.e. child-elements and attributes)
         pass
 
+
+    def test_unpack(self):
+        # should allow automatic unpacking of lead-wrappers down to the level of naked rows
+        # NOTE pysubyt does this for xml sources so we will need this
+        pass 
+
     def test_roundtrip(self):
         inputs = [
             """<some><content>text</content><empty /></some>"""
