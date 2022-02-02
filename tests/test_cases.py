@@ -7,18 +7,34 @@ from xmlasdict import parse
 
 class TestBasicCases(unittest.TestCase):
 
-    def test_simple(self):
+    def test_basic_file(self):
         log.info("test simple")
         xmlinfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inputs', '01-basic.xml')
-        xml = parse(xmlinfile)
+        xdict = parse(xmlinfile)
+        # TODO make actually some predictions based on that sample file
+
+    def test_access(self):
+        xdict = parse("<root><num>1</num><name>Marc</name></root>")
+        #assert xdict.num == '1', "error accessing first node"
+        #assert xdict.name == Name, "error accessing second node"
+
 
     def test_lists(self):
         # should make lists of repeating children
         pass
 
-    def test_roundtrip(self):
-        # check if xml output is same after reading and re-serializing
+    def test_iteration(self):
+        # should allow running through all the keys (i.e. child-elements and attributes)
         pass
+
+    def test_roundtrip(self):
+        inputs = [
+            """<some><content>text</content><empty /></some>"""
+        ]
+
+        for xml in inputs:
+            xdict = parse(xml)
+            assert str(xdict) == xml, f"failed roundtrip parse-serialize for {xml}"
 
 
     def test_reordering(self):

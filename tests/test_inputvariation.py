@@ -10,13 +10,11 @@ class TestInputVariants(unittest.TestCase):
     def test_file_input(self):
         xmlinfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inputs', '01-basic.xml')
         xml = parse(xmlinfile)
-
-        log.info("testing str.upper()")
-        self.assertEqual('foo'.upper(), 'FOO')
+        assert xml is not None, "we should have gotten some return"
 
     def test_string_input(self):
-        # xml = parse("<root/>")
-        pass
+        xml = parse("<root/>")
+        assert xml is not None, "we should have gotten some return"
 
     def test_other_input(self):
         # TODO check with xmltodict what support they have + als check with emltree of course

@@ -34,4 +34,4 @@ install:
 	@${PYTHON} setup.py install
 
 docker-build:
-	@docker build . -t py_xmlasdict
+	@docker build . -t xmlasdict
