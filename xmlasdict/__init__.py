@@ -1,6 +1,6 @@
-""" py_xmlasdict
+""" xmlasdict
 
-.. module:: py_xmlasdict
+.. module:: xmlasdict
     :synopsis: python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)
 
 .. moduleauthor:: Marc Portier <marc.portier@gmail.com>
