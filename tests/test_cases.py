@@ -19,8 +19,8 @@ class TestBasicCases(unittest.TestCase):
 
     def test_nested_access(self):
         xdict = parse("<root><wrap><num>1</num><name>Marc</name></wrap></root>")
-        # assert int(str(xdict.wrap.num)) == 1, "error accessing num node content"
-        # assert str(xdict.wrap.name) == 'Marc', "error accessing name node content"
+        assert int(str(xdict.wrap.num)) == 1, "error accessing num node content"
+        assert str(xdict.wrap.name) == 'Marc', "error accessing name node content"
 
     def test_list_access(self):
         # should make lists of repeating children
