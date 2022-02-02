@@ -10,6 +10,7 @@ _build/
 *.log
 
 # vemnv / Byte-compiled / optimized / DLL files
+.env
 venv/
 __pycache__/
 __pycache__/

@@ -7,10 +7,11 @@
 
 """
 
-from .wrapper import MyModel
+from .parser import parse
+from .wrapper import Wrapper
 import logging
 
-__all__ = ['MyModel']
+__all__ = ['parse', 'Wrapper']
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())

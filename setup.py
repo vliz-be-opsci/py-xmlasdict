@@ -19,13 +19,13 @@ except ImportError:
 
 
 # Fixed Package meta-data.
-NAME = 'py_xmlasdict'
+NAME = 'xmlasdict'
 DESCRIPTION = 'python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)'
 URL = 'https://github.com/vliz-be-opsci/py-xmlasdict'
 EMAIL = 'marc.portier@gmail.com'
 AUTHOR = 'Marc Portier'
 LICENSE = 'MIT'
-CONSOLE_SCRIPTS = ['py_xmlasdict = py_xmlasdict.__main__:main']
+CONSOLE_SCRIPTS = ['xmlasdict = xmlasdict.__main__:main']
 TROVE_CLASSES = [
     # Trove classifiers
     # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers

@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'py_xmlasdict'
+project = 'xmlasdict'
 copyright = '2020, Marc Portier'
 author = 'Marc Portier'
 
