@@ -25,15 +25,25 @@ class TestBasicCases(unittest.TestCase):
     def test_list_access(self):
         # should make lists of repeating children
         xdict = parse("<r><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s></r>")
-        # assert list(int(str(i)) for i in xdict.i) == [1, 2, 3]
-        # assert list(str(s) for s in xdict.s) == ['a', 'b', 'c']
+
+        # one is expected to iterate lists
+        assert list(int(str(i)) for i in xdict.i) == [1, 2, 3]
+        assert list(str(s) for s in xdict.s) == ['a', 'b', 'c']
+
+        # but we also assure a nice unwrapped direct str representation
+        assert (str(xdict.i)) == "['1', '2', '3']"
+        log.debug(f"xdict.i = {xdict.i}")
+        log.debug(f"type(xdict.i) = {type(xdict.i)}")
+
+        # as well as direct subscripting by index and slice
         # assert int(xdict.i[0]) == 1
+        # assert str(xdict.i[1:]) == ['2', '3']
 
         # can we expect this in the case of list(xdict)?
         # assert list(xdict) == ['<i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s>', '1', '2', 'a', '3', 'b', 'c']
-        #  if useful, then probably without the first 'self' included in the list, but just an iteration of all nested children
-        # also challenging to view in combo with mixed content model --> top level text-nodes ?
-        pass
+        # if useful, then probably without the first 'self' included in the list, but just an iteration of all nested children
+        # and finally - list() will give us no opportunity to unwrap - so one will at least need to iterate the list, not just wrap it!
+        # NOTE: this view also brings an extra challenge in combo with mixed content model --> top level text-nodes ?
 
     def test_list_iteration(self):
         # should allow to for-next over values in recurring child-elements

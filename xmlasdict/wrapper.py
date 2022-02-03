@@ -34,7 +34,8 @@ class Wrapper(ABC):
         return xmlstr(self._node)
 
     def __getitem__(self, key: str):
-        assert key is not None and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
+        log.debug(f"accessing [{key}] inside tag {self._node.tag}")
+        assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
         # @ prefix indicates looking up attributes
         if key[0] == '@':
             attr_key = key[1:]
@@ -42,23 +43,26 @@ class Wrapper(ABC):
         raise ValueError(f"key '{key}' not supported")
 
     def __getattr__(self, key: str):
+        log.debug(f"accessing .{key} inside tag {self._node.tag}")
         assert key is not None and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
-        # todo
-        # find the 'key' child-elements inside the node and return an iterator of wrapped children
-        log.debug(f"accessing {key} inside tag {self._node.tag}")
         found_elms = list(self._node.iter(key))
         if len(found_elms) == 0:
             raise AttributeError(f"Current node has no attribute or child for key '{key}'")
-        if len(found_elms) == 1:
-            return Wrapper(found_elms[0])
-        # else
-        return IterWrapper(found_elms)
+        return Wrapper.build(found_elms)
 
     @staticmethod
     def build(node):
-        log.debug(f"building wrapper for {node}")
-        # todo decide based on type of node which one to build
-        # for now simply return the base class
+        assert node is not None, "cannot wrap None"
+        if isinstance(node, Wrapper):  # the wrapper is already there!
+            return node
+        # else
+        if isinstance(node, list):
+            assert len(node) > 0, "cannot wrap empty node lists"
+            if len(node) > 1:
+                return IterWrapper(node)
+            else:
+                node = node[0] # unpack the single element from the list
+        # else - and also if we unpacked that single element !
         return Wrapper(node)
 
 
@@ -75,6 +79,12 @@ class IterWrapper(Wrapper):
             return str(self._nodes[0])
         else:
             return str(list(map(lambda n: str(n), self._nodes)))
+
+    def __getitem__(self, index):
+        log.debug(f"accessing [{key}] inside list[{len(self._nodes)}]")
+        assert isinstance(index, (int, slice)), "IterWrapper is only subscriptable by int or slice"
+        sublist = list(self._nodes[index])
+        return Wrapper.build(sublist)
 
     def __iter__(self):
         return iter(self._nodes)
