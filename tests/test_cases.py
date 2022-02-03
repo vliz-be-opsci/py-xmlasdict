@@ -25,9 +25,9 @@ class TestBasicCases(unittest.TestCase):
     def test_list_access(self):
         # should make lists of repeating children
         xdict = parse("<r><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s></r>")
-        # assert list(xdict.i) == ['1', '2', '3']
-        # assert list(xdict.s) == ['a', 'b', 'c']
-        # assert xdict.i[0] == '1'
+        # assert list(int(str(i)) for i in xdict.i) == [1, 2, 3]
+        # assert list(str(s) for s in xdict.s) == ['a', 'b', 'c']
+        # assert int(xdict.i[0]) == 1
         pass
 
     def test_list_iteration(self):
