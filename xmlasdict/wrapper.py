@@ -71,23 +71,28 @@ class IterWrapper(Wrapper):
     """
     def __init__(self, node_list):
         assert len(node_list) > 1, "Do not use IterWrapper for empty or single item lists."
-        self._nodes = list(map(lambda n: Wrapper.build(n), node_list))
+        self._nodes = node_list  # original nodes
+        self._wrappers = list(map(lambda n: Wrapper.build(n), node_list))  # nodes, ready wrapped
+
 
     def __str__(self):
         if len(self._nodes) == 1:
             log.debug(f"unwrap first --> {self._nodes[0]}")
-            return str(self._nodes[0])
+            return str(self._wrappers[0])
         else:
-            return str(list(map(lambda n: str(n), self._nodes)))
+            return str(list(map(lambda w: str(w), self._wrappers)))
 
     def __getitem__(self, index):
-        log.debug(f"accessing [{key}] inside list[{len(self._nodes)}]")
+        log.debug(f"accessing [{index}] inside list[{len(self._nodes)}]")
         assert isinstance(index, (int, slice)), "IterWrapper is only subscriptable by int or slice"
-        sublist = list(self._nodes[index])
+        log.debug(f"my self._nodes are {self._nodes}")
+        log.debug(f"my self._wrappers are {self._wrappers}")
+        sublist = self._nodes[index]
+        log.debug(f"sublist at [{index}] has size={len(sublist)}")
         return Wrapper.build(sublist)
 
     def __iter__(self):
-        return iter(self._nodes)
+        return iter(self._wrappers)
 
     # todo consider __getitem__ to also support indices [0] and even slices [2:5]
     # see --> https://stackoverflow.com/questions/33587459/which-exception-should-getitem-setitem-use-with-an-unsupported-slice-ste
