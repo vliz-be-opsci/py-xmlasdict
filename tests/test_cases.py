@@ -28,15 +28,36 @@ class TestBasicCases(unittest.TestCase):
         # assert list(xdict.i) == ['1', '2', '3']
         # assert list(xdict.s) == ['a', 'b', 'c']
         # assert xdict.i[0] == '1'
+
+        # can we expect this in the case of list(xdict)?
+        # assert list(xdict) == ['<i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s>', '1', '2', 'a', '3', 'b', 'c']
         pass
 
     def test_list_iteration(self):
         # should allow to for-next over values in recurring child-elements
+        xdict = parse("<r><i>1</i><s>a</s><i>2</i><s>b</s></r>")
+        # iter_xdict = iter(xdict)
+        # next_element = next(iter_dict)
+        # assert str(next_element) = '<i>1</i><i>2</i><s>a</s><s>b</s>'
+        # assert list(next_element.i) = ['1','2'] 
+
         # actually -- also if one loops over a single occurence !!!
+        # iter_xdict_i = iter(xdict.i)
+        # assert str(next(iter_xdict_i)) = '1'
+        # assert str(next(iter_xdict_i)) = '2'
+
+        # iter_xdict_s = iter(xdict.s)
+        # assert list(iter_xdict_s) = ['a', 'b']
         pass
 
     def test_empty(self):
         # we should decide how <empty/> elements should be read
+        xdict = parse("<root><empty type='important'></empty></root>")
+        # Option 1: return them as an empty string -> not desirable in templates
+        # assert str(xdict.empty) == ''
+        # Option 2 (if possible): make str/text representation a null object OR false 
+        # assert xdict.empty != null
+        # assert str(xdict.empty) == null
         pass
 
     def test_inspection(self):
