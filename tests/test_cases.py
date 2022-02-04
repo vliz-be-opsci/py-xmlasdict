@@ -130,6 +130,11 @@ class TestBasicCases(unittest.TestCase):
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
+        # inspiration: 
+        # https://github.com/martinblech/xmltodict#namespace-support 
+        # https://github.com/martinblech/xmltodict/blob/master/tests/test_xmltodict.py#L182 (tests)
+        # https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
+        # https://github.com/python/cpython/blob/3.10/Lib/test/test_xml_etree.py#L1161 (tests)
         pass
 
 
