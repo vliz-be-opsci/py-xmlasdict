@@ -1,6 +1,4 @@
-# Use this file to describe the datamodel handled by this module
-# we recommend using abstract classes to achieve proper service and interface insulation
-from abc import ABC, abstractmethod
+from collections.abc import Mapping
 from xml.etree import ElementTree
 import logging
 
@@ -20,17 +18,32 @@ def innerXML(node):
     return str(node.text or '') + ''.join(xmlstr(c) for c in node)
 
 
-class Wrapper(ABC):
+class Wrapper(Mapping):
     """ The core of the xmlasdict solution is a wrapper around etree nodes that fake some dict like look on their content
     """
 
-    def __init__ (self, node):
+    def __init__ (self, node: ElementTree.Element):
+        assert isinstance(node, ElementTree.Element), f"Wrapper only designed to work with xml.etree.ElementTree.Element not '{type(node)}'"
         self._node = node
 
+    def keys(self):
+        """ returns a set of nested items (= attributes (@ prefixed) and nested unique tags)
+        """
+        keys = set()  # todo consider how important it is these keyse should be kept in order? if so we should use a list in stead
+        for attr in self._node.attrib:
+            keys.add('@' + attr)
+        for child in self._node:
+            keys.add(child.tag)
+        return keys
+
     def __str__(self):
+        """ returns the xml content of the current node as a string
+        """
         return innerXML(self._node)
 
     def dumps(self):
+        """ dumps the full xml representation of the current node as a string
+        """
         return xmlstr(self._node)
 
     def __getitem__(self, key: str):
@@ -39,16 +52,21 @@ class Wrapper(ABC):
         # @ prefix indicates looking up attributes
         if key[0] == '@':
             attr_key = key[1:]
-            return self._node.attrib[attr_key]
-        raise ValueError(f"key '{key}' not supported")
+            return Wrapper._getattribute(self._node, attr_key)
+        # else
+        #  TODO other special ones like #text #all
+        return Wrapper._getchildren(self._node, key)
 
     def __getattr__(self, key: str):
         log.debug(f"accessing .{key} inside tag {self._node.tag}")
-        assert key is not None and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
-        found_elms = list(self._node.iter(key))
-        if len(found_elms) == 0:
-            raise AttributeError(f"Current node has no attribute or child for key '{key}'")
-        return Wrapper.build(found_elms)
+        assert key is not None and len(key) > 0, f"Cannot get children with invalid key '{key}'"
+        return Wrapper._getchildren(self._node, key)
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __len__(self):
+        return len(self.keys())
 
     @staticmethod
     def build(node):
@@ -64,6 +82,19 @@ class Wrapper(ABC):
                 node = node[0] # unpack the single element from the list
         # else - and also if we unpacked that single element !
         return Wrapper(node)
+
+    @staticmethod
+    def _getchildren(node, key: str):
+        found_elms = node.findall(key)
+        if len(found_elms) == 0:
+            raise AttributeError(f"Current node has no child with tag '{key}'")
+        return Wrapper.build(found_elms)
+
+    @staticmethod
+    def _getattribute(node, attr_key: str):
+        if attr_key not in node.attrib:
+            raise AttributeError(f"Current node has no attribute with name '{attr_key}'")
+        return node.attrib[attr_key]
 
 
 class IterWrapper(Wrapper):
@@ -93,6 +124,9 @@ class IterWrapper(Wrapper):
 
     def __iter__(self):
         return iter(self._wrappers)
+
+    def __len__(self):
+        return len(self._wrappers)
 
     # todo consider __getitem__ to also support indices [0] and even slices [2:5]
     # see --> https://stackoverflow.com/questions/33587459/which-exception-should-getitem-setitem-use-with-an-unsupported-slice-ste
