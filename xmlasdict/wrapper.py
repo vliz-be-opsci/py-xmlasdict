@@ -41,6 +41,12 @@ class Wrapper(Mapping):
         """
         return innerXML(self._node)
 
+    def __bool__(self):
+        """ returns true/false based on if the node has any content
+        this allows direct usage of empty elements in if statements
+        """
+        return bool(str(self))
+
     def dumps(self):
         """ dumps the full xml representation of the current node as a string
         """

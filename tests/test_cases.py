@@ -94,19 +94,8 @@ class TestBasicCases(unittest.TestCase):
     def test_empty(self):
         # we should decide how <empty/> elements should be read
         xdict = parse("<root><empty type='important' /></root>")
-        assert str(xdict.empty) == ''
-
-        # Option 1: return them as an empty string -> not desirable in templates
-        # assert str(xdict.empty) == ''
-        # ?s ?p {{obj.empty}}.  ==> ?s ?p .
-        # {% if ...}?s ?p {{ttl_fmt(obj.empty, 'xsd:string')}}{% endif %} ==> ?s ?p ''^^xsd:string .
-        # Option 2 (if possible): make str/text representation a null object OR false
-        # assert xdict.empty != null
-        # assert str(xdict.empty) == null
-        #  remarks (mpo)
-        #     -- null not a python concept --> None?
-        #     -- False feels arbitrary --> actually why not "True" as indication of the existence/presence of the element?
-        #     -- for now we think we should go for '' return
+        assert str(xdict.empty) == '', "empty elements should produce empty string representation"
+        assert not(bool(xdict.empty)), "empty elements should behave as false"
 
     def test_unpack(self):
         # should allow automatic unpacking of lead-wrappers down to the level of naked rows
