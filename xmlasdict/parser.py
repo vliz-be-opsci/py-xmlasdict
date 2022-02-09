@@ -8,9 +8,9 @@ def parse(input: str):
     """
     xml = None
     if os.path.isfile(input):
-        xml = ElementTree.parse(input)
+        xml = ElementTree.parse(input).getroot()
     elif isinstance(input, str): # overdone to enforce and input[0] == '<' and input[-1] == '>':
-        xml = ElementTree.fromstring(input) # TODO check if we should not apply .getroot() on this 
+        xml = ElementTree.fromstring(input) # TODO check if we should not apply .getroot() on this
 
     assert xml is not None, f"could not parse input {input}"
     return Wrapper.build(xml)
