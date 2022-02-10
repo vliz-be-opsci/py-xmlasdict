@@ -75,8 +75,24 @@ class TestBasicCases(unittest.TestCase):
         # there is also a way to just iterate over all the nested children
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
         assert [str(x) for x in xdict['*']] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
+
+    def test_tag_getting(self):
+        xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
         assert [x.tag for x in xdict['*']] == ['i', 'i', 's', 'i', 's', 's', 'd']
         assert xdict['*'].tag == ['i', 'i', 's', 'i', 's', 's', 'd']
+
+    def test_ambiguous_terms(self):
+        # we have to be cautious with the introduced functions and properties as they hide some potential tags
+        xdict = parse("<r><tag>tag_content</tag><dumps>dumps_content</dumps><unpack>unpack_content</unpack></r>")
+        # tag
+        assert xdict.tag == 'r'
+        assert str(xdict['tag']) == 'tag_content'
+        # unpack
+        assert xdict.unpack()[0] == xdict
+        assert str(xdict['unpack']) == 'unpack_content'
+        # dumps
+        assert xdict.dumps() == "<r><tag>tag_content</tag><dumps>dumps_content</dumps><unpack>unpack_content</unpack></r>"
+        assert str(xdict['dumps']) == 'dumps_content'
 
     def test_empty(self):
         # we should decide how <empty/> elements should be read
