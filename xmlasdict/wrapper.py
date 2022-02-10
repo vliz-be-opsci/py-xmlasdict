@@ -29,9 +29,20 @@ class Wrapper(Mapping):
     def keys(self):
         """ returns a set of nested items (= attributes (@ prefixed) and nested unique tags)
         """
-        keys = set()  # todo consider how important it is these keyse should be kept in order? if so we should use a list in stead
+        return set() | self._attr_keys() | self._elm_keys()  # the union of attr_keys and elm_keys
+
+    def _attr_keys(self):
+        """ the set of available attribute names presented as __getitem__() keys
+        """
+        keys = set()
         for attr in self._node.attrib:
             keys.add('@' + attr)
+        return keys
+
+    def _elm_keys(self):
+        """ the set of nested element_tags presented as __getitem__() keys
+        """
+        keys = set()
         for child in self._node:
             keys.add(child.tag)
         return keys
@@ -52,6 +63,21 @@ class Wrapper(Mapping):
         """
         return xmlstr(self._node)
 
+    @property
+    def tag(self):
+        return self._node.tag
+
+    def unpack(self):
+        """ retrieves highest level row content down from a chain of (unuseful) single wrapper_nodes
+        """
+        log.debug(f"unpack at {self._node.tag}")
+        nested_tags = self._elm_keys()
+        if len(nested_tags) > 1 or len(nested_tags) == 0:   # if there are (or) mixed elements under this node (or) none
+            return IterWrapper([self])                      # then unpack ends here
+        # else actually (try) unpack if all nested elements are of the same flavour
+        content = Wrapper._getchildren(self._node, '*')
+        return content.unpack()
+
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
         assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
@@ -60,7 +86,7 @@ class Wrapper(Mapping):
             attr_key = key[1:]
             return Wrapper._getattribute(self._node, attr_key)
         # else
-        #  TODO other special ones like #text #all
+        # TODO maybe consider other special ones like #text to grab the equivalent of xpath text() ??
         return Wrapper._getchildren(self._node, key)
 
     def __getattr__(self, key: str):
@@ -107,7 +133,7 @@ class IterWrapper(Wrapper):
     """ Wraps a list of elements
     """
     def __init__(self, node_list):
-        assert len(node_list) > 1, "Do not use IterWrapper for empty or single item lists."
+        assert len(node_list) > 0, "Do not use IterWrapper for empty lists."
         self._nodes = node_list  # original nodes
         self._wrappers = list(map(lambda n: Wrapper.build(n), node_list))  # nodes, ready wrapped
 
@@ -134,21 +160,13 @@ class IterWrapper(Wrapper):
     def __len__(self):
         return len(self._wrappers)
 
-    # todo consider __getitem__ to also support indices [0] and even slices [2:5]
-    # see --> https://stackoverflow.com/questions/33587459/which-exception-should-getitem-setitem-use-with-an-unsupported-slice-ste
+    def unpack(self):
+        log.debug(f"end of unpack with length {len(self._nodes)}")
+        return self # the goal of unpack is to end when we are at the level if iterables
 
+    def dumps(self):
+        return ''.join([w.dumps() for w in self._wrappers])
 
-class DocumentWrapper(Wrapper):
-    pass
-
-
-class ElementWrapper(Wrapper):
-    pass
-
-
-class AttributeWrapper(Wrapper):
-    pass
-
-
-class CommentsWrapper(Wrapper):
-    pass
+    @property
+    def tag(self):
+        return [n.tag for n in self._wrappers]

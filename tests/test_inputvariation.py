@@ -26,7 +26,7 @@ class TestInputVariants(unittest.TestCase):
 
     # in xml.etree (https://docs.python.org/3/library/xml.etree.elementtree.html#xml.etree.ElementTree.fromstringlist)
     def test_sequence_input(self):
-        sequenceObj = "list or other object with sequence of xml data fragments"
+        sequenceObj = ["<root>", "<nested>something</nested>", "</root>"]  # TODO check for actual examples
         # xml = parse(sequenceObj)
         # assert xml is not None, "we should have gotten some return"
 

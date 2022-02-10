@@ -22,6 +22,12 @@ class TestBasicCases(unittest.TestCase):
         assert int(str(xdict.wrap.num)) == 1, "error accessing num node content"
         assert str(xdict.wrap.name) == 'Marc', "error accessing name node content"
 
+    def test_attributes(self):
+        # check addressing test_attributes
+        xdict = parse("<r top='me'><child type='some'/></r>")
+        assert xdict['@top'] == 'me', "error accessing root attribute"
+        assert xdict.child['@type'] == 'some', "error accessing child attribute"
+
     def test_list_access(self):
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
 
@@ -57,39 +63,20 @@ class TestBasicCases(unittest.TestCase):
 
         assert len(list(xdict)) == 4, "not the order but the size should be predictable"
 
-        todict = dict(xdict)
-        assert set(xdict) == set(todict), "the sets of keys should match"
-        assert str(todict['i']) == "['1', '2', '3']"
-        assert [int(str(n)) for n in todict['i']] == [1, 2, 3]
-        assert str(todict['s']) == "['a', 'b', 'c']"
-        assert [str(n) for n in todict['s']] == ['a', 'b', 'c']
-        assert str(todict['d']) =='<n>me</n>'
+        pydict = dict(xdict)
+        assert set(xdict) == set(pydict), "the sets of keys should match"
+        assert str(pydict['i']) == "['1', '2', '3']"
+        assert [int(str(n)) for n in pydict['i']] == [1, 2, 3]
+        assert str(pydict['s']) == "['a', 'b', 'c']"
+        assert [str(n) for n in pydict['s']] == ['a', 'b', 'c']
+        assert str(pydict['d']) =='<n>me</n>'
 
-    def test_list_iteration(self):
-        # there is also some more dictlike behaviour we expose
+    def test_list_all(self):
+        # there is also a way to just iterate over all the nested children
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
-        # assert [str(x) for x in xdict.children()] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
-
-        # can we expect this in the case of list(xdict)?
-        # assert list(xdict) == ['<i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s>', '1', '2', 'a', '3', 'b', 'c']
-        # remarks (mpo) --
-        #   if useful, then probably without the first 'self' included in the list, but just an iteration of all nested children
-        #   and finally - list() will give us no opportunity to unwrap - so one will at least need to iterate the list, not just wrap it!
-        #   NOTE: this view also brings an extra challenge in combo with mixed content model --> top level text-nodes ?
-
-        # should allow to for-next over values in recurring child-elements
-        # iter_xdict = iter(xdict)
-        # next_element = next(iter_dict)
-        # assert str(next_element) = '<i>1</i><i>2</i><s>a</s><s>b</s>'
-        # assert list(next_element.i) = ['1','2']
-
-        # actually -- also if one loops over a single occurence !!!
-        # iter_xdict_i = iter(xdict.i)
-        # assert str(next(iter_xdict_i)) = '1'
-        # assert str(next(iter_xdict_i)) = '2'
-
-        # iter_xdict_s = iter(xdict.s)
-        # assert list(iter_xdict_s) = ['a', 'b']
+        assert [str(x) for x in xdict['*']] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
+        assert [x.tag for x in xdict['*']] == ['i', 'i', 's', 'i', 's', 's', 'd']
+        assert xdict['*'].tag == ['i', 'i', 's', 'i', 's', 's', 'd']
 
     def test_empty(self):
         # we should decide how <empty/> elements should be read
@@ -97,15 +84,34 @@ class TestBasicCases(unittest.TestCase):
         assert str(xdict.empty) == '', "empty elements should produce empty string representation"
         assert not(bool(xdict.empty)), "empty elements should behave as false"
 
-    def test_unpack(self):
+    def test_unpack_shallow(self):
         # should allow automatic unpacking of lead-wrappers down to the level of naked rows
         # NOTE pysubyt does this for xml sources so we will need this
         xdict = parse("<r0><r1><r2><r3><d>1</d><d>2</d></r3></r2></r1></r0>")
-        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
+        data = xdict.unpack()
+        log.debug(f"data = {data} type = {type(data)}")
+        assert data.dumps() == "<d>1</d><d>2</d>"
+        assert str(data) == "['1', '2']"
 
+        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
         xdict = parse("<r0><r1><r2><r3><d>1</d></r3></r2></r1></r0>")
-        # note: in this case we have to backup to the same r0.r1.r2.r3 level
-        pass
+        data = xdict.unpack()
+        assert data.dumps() == "<d>1</d>"
+        assert str(data) == "1"
+
+    def test_unpack_deep(self):
+        # should allow automatic unpacking of lead-wrappers down to the level of naked rows
+        # NOTE pysubyt does this for xml sources so we will need this
+        xdict = parse("<r0><r1><r2><r3><d><id>1</id><nm>Me</nm></d><d><id>2</id><nm>You</nm></d></r3></r2></r1></r0>")
+        data = xdict.unpack()
+        assert data.dumps() == "<d><id>1</id><nm>Me</nm></d><d><id>2</id><nm>You</nm></d>"
+        assert [str(n) for n in data] == ['<id>1</id><nm>Me</nm>', '<id>2</id><nm>You</nm>']
+
+        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
+        xdict = parse("<r0><r1><r2><r3><d><id>1</id><nm>One</nm></d></r3></r2></r1></r0>")
+        data = xdict.unpack()
+        assert data.dumps() == "<d><id>1</id><nm>One</nm></d>"
+        assert [str(n) for n in data] == ['<id>1</id><nm>One</nm>']
 
     def test_roundtrip(self):
         inputs = [
@@ -138,12 +144,6 @@ class TestBasicCases(unittest.TestCase):
         </root>
         """
         pass
-
-    def test_attributes(self):
-        # check addressing test_attributes
-        xdict = parse("<r top='me'><child type='some'/></r>")
-        assert xdict['@top'] == 'me', "error accessing root attribute"
-        assert xdict.child['@type'] == 'some', "error accessing child attribute"
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
