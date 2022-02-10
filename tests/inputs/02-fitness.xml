@@ -1,0 +1,100 @@
+<root xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:dc="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd" 
+	packageId="eml.1.1" system="http://www.vliz.be/imis" xml:lang="en">
+
+<Element1>
+	<title xml:lang="en">This is a dataset</title>
+
+	<A>
+		<child1>
+			<child1_a>text</child1_a>
+			<child1_b>text</child1_b>
+		</child1>
+		<child2>text</child2>
+		<child3>example@email.org</child3>
+	</A>
+	<empty/>
+	<B>en</B>
+	<C>
+		<para><![CDATA[Something a bit more unusual.]]></para>
+	</C>
+	<D>
+		<D_child1>keywordA1</D_child1>
+		<D_child1>keywordA2</D_child1>
+		<D_child_source>ASFA</D_child_source>
+	</D>
+	<D>
+		<D_child1>keywordB1</D_child1>
+		<D_child1>keywordB2</D_child1>
+		<D_child_source>BSFA</D_child_source>
+	</D>
+	<E>
+		<para>Start of sentence <ulink url="http://example.org/path"><Ee> Example link</Ee></ulink> and now there is the end of the sentennce.</para>
+	</E>
+	
+	<F>
+    		<F_child1>
+      			<F_child1_descr>Some textual description</F_child1_descr>
+			<F_child1_elements>
+    				<Elem1>    </Elem1>
+    				<Elem2>    </Elem2>
+    				<Elem3>    </Elem3>
+    				<Elem4>    </Elem4>
+    			</F_child1_elements>
+		</F_child1>
+		<F_child1 id="MRGID:2546">
+      			<F_child1_descr>Another textual description</F_child1_descr>
+			<F_child1_elements>
+    				<Elem1>    </Elem1>
+    				<Elem2>    </Elem2>
+    				<Elem3>    </Elem3>
+    				<Elem4>    </Elem4>
+    			</F_child1_elements>
+		</F_child1>
+    		<F_child1 id="MRGID:2546">
+      			<F_child1_descr>And yet another textual description</F_child1_descr>
+			<F_child1_elements>
+    				<Elem1>    </Elem1>
+    				<Elem2>    </Elem2>
+    				<Elem3>    </Elem3>
+    				<Elem4>    </Elem4>
+    			</F_child1_elements>
+		</F_child1>
+
+		<F_child2>
+      			<F_child2_1>
+        			<a><date>1900-07-01</date></a>
+        			<b><date>1900-03-01</date></b>
+      			</F_child2_1>
+    		</F_child2>
+		<F_child2>
+ 			<F_child2_2><date>1900-01-01</date></F_child2_2>
+ 		</F_child2>
+
+		<F_child3 id="urn:sisisi:lalalalala:dododo:">
+			<general>126281</general>
+			<classification>
+				<name>species</name>
+				<value>Anguilla anguilla</value>
+			</classification>
+		</F_child3>
+	</F>
+</Element1>
+
+<Element2>
+	<a>
+		<b>
+			<date>2020-12-07T10:40:31+01:00</date>
+			<b_2>dataset</b_2>
+				<b_2_1>Metadata</b_2_1>
+				<b_2_2>UTF-8</b_2_2>
+				<b_2_3>
+					<b_2_3_1> 
+						Some text here ...
+						<surpriseElement></surpriseElement>
+					</b_2_3_1>
+				</b_2_3>
+		</b>
+	</a>
+</Element2>
+
+</root>
