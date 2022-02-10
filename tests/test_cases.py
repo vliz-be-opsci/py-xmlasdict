@@ -139,27 +139,37 @@ class TestBasicCases(unittest.TestCase):
             assert xdict.dumps() == xml, f"failed roundtrip parse-serialize for {xml}"
 
     def test_mixed_content_model(self):
-        # and difference between innerXML versus text() node ???
-        pass
+        mixed_content = '<a href="http://example.org/">This</a> is <em>actual</em> mixed <strong>content</strong>'
+        mixed_xml = "<p>" + mixed_content + "</p>"
+        xdict = parse(mixed_xml)
+        assert str(xdict) == mixed_content
+        assert xdict.dumps() == mixed_xml
 
-    def test_whitespace(self):
-        # check expectations (if any) concerning whitespace
-        """ what is same and what is different between
-        <root><row><x>1</x></row></root>
-          and
-
-        <root><row><x> 1 </x></row></root>
-
-         and
-        <root>
+    def test_ignore_whitespace(self):
+        # three variants of the same xml -- and how xdict handles them
+        strict = "<root><row><x>1</x></row></root>"
+        spaced = "<root><row><x> 1 </x></row></root>"
+        pretty = """<root>
           <row>
             <x>
               1
             </x>
           </row>
-        </root>
-        """
-        pass
+        </root>"""
+
+        strict_xdict = parse(strict)
+        spaced_xdict = parse(spaced)
+        pretty_xdict = parse(pretty)
+
+        #  roundtripping keeps all whitespace
+        assert strict_xdict.dumps() == strict
+        assert spaced_xdict.dumps() == spaced
+        assert pretty_xdict.dumps() == pretty
+
+        # but value access is stripped
+        assert f"{strict_xdict.row.x}" == f"{spaced_xdict.row.x}"
+        assert f"{strict_xdict.row.x}" == f"{pretty_xdict.row.x}"
+
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes

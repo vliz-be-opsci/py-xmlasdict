@@ -50,7 +50,7 @@ class Wrapper(Mapping):
     def __str__(self):
         """ returns the xml content of the current node as a string
         """
-        return innerXML(self._node)
+        return innerXML(self._node).strip()
 
     def __bool__(self):
         """ returns true/false based on if the node has any content
