@@ -22,8 +22,8 @@ class Wrapper(Mapping):
     """ The core of the xmlasdict solution is a wrapper around etree nodes that fake some dict like look on their content
     """
 
-    def __init__ (self, node: ElementTree.Element):
-        assert isinstance(node, ElementTree.Element), f"Wrapper only designed to work with xml.etree.ElementTree.Element not '{type(node)}'"
+    def __init__(self, node: ElementTree.Element):
+        assert isinstance(node, ElementTree.Element), f"Wrapper only works with xml.etree.ElementTree.Element not '{type(node)}'"
         self._node = node
 
     def keys(self):
@@ -78,6 +78,13 @@ class Wrapper(Mapping):
         content = Wrapper._getchildren(self._node, '*')
         return content.unpack()
 
+    def unwrap(self):
+        """ turns the content into a native py representation (dict for Wrapper and list for IterWrapper)
+        """
+        # handle both nested element as well as str (attribute) returns
+        def unwrap(value): return value.unwrap() if isinstance(value, Wrapper) else value
+        return {k: unwrap(self[k]) for k in set(self)} if len(set(self)) > 0 else str(self)
+
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
         assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
@@ -111,7 +118,7 @@ class Wrapper(Mapping):
             if len(node) > 1:
                 return IterWrapper(node)
             else:
-                node = node[0] # unpack the single element from the list
+                node = node[0]  # unpack the single element from the list
         # else - and also if we unpacked that single element !
         return Wrapper(node)
 
@@ -137,10 +144,8 @@ class IterWrapper(Wrapper):
         self._nodes = node_list  # original nodes
         self._wrappers = list(map(lambda n: Wrapper.build(n), node_list))  # nodes, ready wrapped
 
-
     def __str__(self):
         if len(self._nodes) == 1:
-            log.debug(f"unwrap first --> {self._nodes[0]}")
             return str(self._wrappers[0])
         else:
             return str(list(map(lambda w: str(w), self._wrappers)))
@@ -148,10 +153,7 @@ class IterWrapper(Wrapper):
     def __getitem__(self, index):
         log.debug(f"accessing [{index}] inside list[{len(self._nodes)}]")
         assert isinstance(index, (int, slice)), "IterWrapper is only subscriptable by int or slice"
-        log.debug(f"my self._nodes are {self._nodes}")
-        log.debug(f"my self._wrappers are {self._wrappers}")
         sublist = self._nodes[index]
-        log.debug(f"sublist at [{index}] has size={len(sublist)}")
         return Wrapper.build(sublist)
 
     def __iter__(self):
@@ -161,8 +163,12 @@ class IterWrapper(Wrapper):
         return len(self._wrappers)
 
     def unpack(self):
-        log.debug(f"end of unpack with length {len(self._nodes)}")
-        return self # the goal of unpack is to end when we are at the level if iterables
+        return self  # the goal of unpack is to end when we are at the level if iterables
+
+    def unwrap(self):
+        """ turns the content into a native py representation (dict for Wrapper and list for IterWrapper)
+        """
+        return [w.unwrap() for w in self._wrappers]
 
     def dumps(self):
         return ''.join([w.dumps() for w in self._wrappers])

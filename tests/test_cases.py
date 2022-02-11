@@ -1,16 +1,9 @@
 import unittest
-import os
 from util4tests import run_single_test, log
-
 from xmlasdict import parse
 
 
-class TestBasicCases(unittest.TestCase):
-
-    def test_basic_file(self):
-        xmlinfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inputs', '01-basic.xml')
-        xdict = parse(xmlinfile)
-        # TODO make actually some predictions/tests based on the content of that sample file
+class TestCases(unittest.TestCase):
 
     def test_access(self):
         xdict = parse("<root><num>1</num><name>Marc</name></root>")
@@ -69,12 +62,33 @@ class TestBasicCases(unittest.TestCase):
         assert [int(str(n)) for n in pydict['i']] == [1, 2, 3]
         assert str(pydict['s']) == "['a', 'b', 'c']"
         assert [str(n) for n in pydict['s']] == ['a', 'b', 'c']
-        assert str(pydict['d']) =='<n>me</n>'
+        assert str(pydict['d']) == '<n>me</n>'
+
+    def test_unwrap(self):
+        xdict = parse("<r p='@p'><a>a</a><a><aa>aa</aa><ab>ab</ab></a><b>b</b></r>")
+        shallow_dict = dict(xdict)
+        assert [str(n) for n in shallow_dict['a']] == ['a', '<aa>aa</aa><ab>ab</ab>']
+
+        assert xdict.unwrap() == {'@p': '@p', 'a': ['a', {'aa': 'aa', 'ab': 'ab'}], 'b': 'b'}
+        assert xdict['*'].unwrap() == ['a', {'aa': 'aa', 'ab': 'ab'}, 'b']
+        assert xdict['a'].unwrap() == ['a', {'aa': 'aa', 'ab': 'ab'}]
+        assert xdict['b'].unwrap() == 'b'
+        assert xdict['.//aa'].unwrap() == 'aa'
 
     def test_list_all(self):
         # there is also a way to just iterate over all the nested children
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
         assert [str(x) for x in xdict['*']] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
+
+    def test_path_like_access(self):
+        # there is also a way to just iterate over all the nested children
+        xdict = parse("<r><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><s>me</s></d></r>")
+        assert [str(n) for n in xdict['s']] == ['a', 'b', 'c']
+        assert [str(n) for n in xdict['./s']] == ['a', 'b', 'c']
+        assert [str(n) for n in xdict['.//s']] == ['a', 'b', 'c', 'me']
+        assert str(xdict['d/s']) == 'me'
+        assert str(xdict['./d/s']) == 'me'
+        assert str(xdict['.//d/s']) == 'me'
 
     def test_tag_getting(self):
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
@@ -82,17 +96,22 @@ class TestBasicCases(unittest.TestCase):
         assert xdict['*'].tag == ['i', 'i', 's', 'i', 's', 's', 'd']
 
     def test_ambiguous_terms(self):
+        known_members = ['tag', 'dumps', 'unpack', 'unwrap']
+        xml = "<r>" + "".join([f"<{m}>{m}_content</{m}>" for m in known_members]) + "</r>"
         # we have to be cautious with the introduced functions and properties as they hide some potential tags
-        xdict = parse("<r><tag>tag_content</tag><dumps>dumps_content</dumps><unpack>unpack_content</unpack></r>")
+        xdict = parse(xml)
         # tag
         assert xdict.tag == 'r'
         assert str(xdict['tag']) == 'tag_content'
+        # dumps
+        assert xdict.dumps() == xml
+        assert str(xdict['dumps']) == 'dumps_content'
         # unpack
         assert xdict.unpack()[0] == xdict
         assert str(xdict['unpack']) == 'unpack_content'
-        # dumps
-        assert xdict.dumps() == "<r><tag>tag_content</tag><dumps>dumps_content</dumps><unpack>unpack_content</unpack></r>"
-        assert str(xdict['dumps']) == 'dumps_content'
+        # unwrap
+        assert xdict.unwrap()['unwrap'] == 'unwrap_content'
+        assert str(xdict['unwrap']) == 'unwrap_content'
 
     def test_empty(self):
         # we should decide how <empty/> elements should be read
@@ -170,7 +189,6 @@ class TestBasicCases(unittest.TestCase):
         assert f"{strict_xdict.row.x}" == f"{spaced_xdict.row.x}"
         assert f"{strict_xdict.row.x}" == f"{pretty_xdict.row.x}"
 
-
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
 
@@ -190,6 +208,7 @@ class TestBasicCases(unittest.TestCase):
         # https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
         # https://github.com/python/cpython/blob/3.10/Lib/test/test_xml_etree.py#L1161 (tests)
         pass
+
 
 if __name__ == "__main__":
     run_single_test(__file__)
