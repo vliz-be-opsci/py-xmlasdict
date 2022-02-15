@@ -5,6 +5,7 @@
 *~
 
 # build results
+dist/
 build/
 _build/
 *.log
