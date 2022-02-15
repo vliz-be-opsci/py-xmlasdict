@@ -1,16 +1,9 @@
 import unittest
-import os
 from util4tests import run_single_test, log
-
 from xmlasdict import parse
 
 
-class TestBasicCases(unittest.TestCase):
-
-    def test_basic_file(self):
-        xmlinfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inputs', '01-basic.xml')
-        xdict = parse(xmlinfile)
-        # TODO make actually some predictions/tests based on the content of that sample file
+class TestCases(unittest.TestCase):
 
     def test_access(self):
         xdict = parse("<root><num>1</num><name>Marc</name></root>")
@@ -21,6 +14,12 @@ class TestBasicCases(unittest.TestCase):
         xdict = parse("<root><wrap><num>1</num><name>Marc</name></wrap></root>")
         assert int(str(xdict.wrap.num)) == 1, "error accessing num node content"
         assert str(xdict.wrap.name) == 'Marc', "error accessing name node content"
+
+    def test_attributes(self):
+        # check addressing test_attributes
+        xdict = parse("<r top='me'><child type='some'/></r>")
+        assert xdict['@top'] == 'me', "error accessing root attribute"
+        assert xdict.child['@type'] == 'some', "error accessing child attribute"
 
     def test_list_access(self):
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
@@ -57,39 +56,62 @@ class TestBasicCases(unittest.TestCase):
 
         assert len(list(xdict)) == 4, "not the order but the size should be predictable"
 
-        todict = dict(xdict)
-        assert set(xdict) == set(todict), "the sets of keys should match"
-        assert str(todict['i']) == "['1', '2', '3']"
-        assert [int(str(n)) for n in todict['i']] == [1, 2, 3]
-        assert str(todict['s']) == "['a', 'b', 'c']"
-        assert [str(n) for n in todict['s']] == ['a', 'b', 'c']
-        assert str(todict['d']) =='<n>me</n>'
+        pydict = dict(xdict)
+        assert set(xdict) == set(pydict), "the sets of keys should match"
+        assert str(pydict['i']) == "['1', '2', '3']"
+        assert [int(str(n)) for n in pydict['i']] == [1, 2, 3]
+        assert str(pydict['s']) == "['a', 'b', 'c']"
+        assert [str(n) for n in pydict['s']] == ['a', 'b', 'c']
+        assert str(pydict['d']) == '<n>me</n>'
 
-    def test_list_iteration(self):
-        # there is also some more dictlike behaviour we expose
+    def test_unwrap(self):
+        xdict = parse("<r p='@p'><a>a</a><a><aa>aa</aa><ab>ab</ab></a><b>b</b></r>")
+        shallow_dict = dict(xdict)
+        assert [str(n) for n in shallow_dict['a']] == ['a', '<aa>aa</aa><ab>ab</ab>']
+
+        assert xdict.unwrap() == {'@p': '@p', 'a': ['a', {'aa': 'aa', 'ab': 'ab'}], 'b': 'b'}
+        assert xdict['*'].unwrap() == ['a', {'aa': 'aa', 'ab': 'ab'}, 'b']
+        assert xdict['a'].unwrap() == ['a', {'aa': 'aa', 'ab': 'ab'}]
+        assert xdict['b'].unwrap() == 'b'
+        assert xdict['.//aa'].unwrap() == 'aa'
+
+    def test_list_all(self):
+        # there is also a way to just iterate over all the nested children
         xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
-        # assert [str(x) for x in xdict.children()] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
+        assert [str(x) for x in xdict['*']] == ['1', '2', 'a', '3', 'b', 'c', '<n>me</n>']
 
-        # can we expect this in the case of list(xdict)?
-        # assert list(xdict) == ['<i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s>', '1', '2', 'a', '3', 'b', 'c']
-        # remarks (mpo) --
-        #   if useful, then probably without the first 'self' included in the list, but just an iteration of all nested children
-        #   and finally - list() will give us no opportunity to unwrap - so one will at least need to iterate the list, not just wrap it!
-        #   NOTE: this view also brings an extra challenge in combo with mixed content model --> top level text-nodes ?
+    def test_path_like_access(self):
+        # there is also a way to just iterate over all the nested children
+        xdict = parse("<r><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><s>me</s></d></r>")
+        assert [str(n) for n in xdict['s']] == ['a', 'b', 'c']
+        assert [str(n) for n in xdict['./s']] == ['a', 'b', 'c']
+        assert [str(n) for n in xdict['.//s']] == ['a', 'b', 'c', 'me']
+        assert str(xdict['d/s']) == 'me'
+        assert str(xdict['./d/s']) == 'me'
+        assert str(xdict['.//d/s']) == 'me'
 
-        # should allow to for-next over values in recurring child-elements
-        # iter_xdict = iter(xdict)
-        # next_element = next(iter_dict)
-        # assert str(next_element) = '<i>1</i><i>2</i><s>a</s><s>b</s>'
-        # assert list(next_element.i) = ['1','2']
+    def test_tag_getting(self):
+        xdict = parse("<r a='on'><i>1</i><i>2</i><s>a</s><i>3</i><s>b</s><s>c</s><d><n>me</n></d></r>")
+        assert [x.tag for x in xdict['*']] == ['i', 'i', 's', 'i', 's', 's', 'd']
+        assert xdict['*'].tag == ['i', 'i', 's', 'i', 's', 's', 'd']
 
-        # actually -- also if one loops over a single occurence !!!
-        # iter_xdict_i = iter(xdict.i)
-        # assert str(next(iter_xdict_i)) = '1'
-        # assert str(next(iter_xdict_i)) = '2'
-
-        # iter_xdict_s = iter(xdict.s)
-        # assert list(iter_xdict_s) = ['a', 'b']
+    def test_ambiguous_terms(self):
+        known_members = ['tag', 'dumps', 'unpack', 'unwrap']
+        xml = "<r>" + "".join([f"<{m}>{m}_content</{m}>" for m in known_members]) + "</r>"
+        # we have to be cautious with the introduced functions and properties as they hide some potential tags
+        xdict = parse(xml)
+        # tag
+        assert xdict.tag == 'r'
+        assert str(xdict['tag']) == 'tag_content'
+        # dumps
+        assert xdict.dumps() == xml
+        assert str(xdict['dumps']) == 'dumps_content'
+        # unpack
+        assert xdict.unpack()[0] == xdict
+        assert str(xdict['unpack']) == 'unpack_content'
+        # unwrap
+        assert xdict.unwrap()['unwrap'] == 'unwrap_content'
+        assert str(xdict['unwrap']) == 'unwrap_content'
 
     def test_empty(self):
         # we should decide how <empty/> elements should be read
@@ -97,15 +119,34 @@ class TestBasicCases(unittest.TestCase):
         assert str(xdict.empty) == '', "empty elements should produce empty string representation"
         assert not(bool(xdict.empty)), "empty elements should behave as false"
 
-    def test_unpack(self):
+    def test_unpack_shallow(self):
         # should allow automatic unpacking of lead-wrappers down to the level of naked rows
         # NOTE pysubyt does this for xml sources so we will need this
         xdict = parse("<r0><r1><r2><r3><d>1</d><d>2</d></r3></r2></r1></r0>")
-        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
+        data = xdict.unpack()
+        log.debug(f"data = {data} type = {type(data)}")
+        assert data.dumps() == "<d>1</d><d>2</d>"
+        assert str(data) == "['1', '2']"
 
+        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
         xdict = parse("<r0><r1><r2><r3><d>1</d></r3></r2></r1></r0>")
-        # note: in this case we have to backup to the same r0.r1.r2.r3 level
-        pass
+        data = xdict.unpack()
+        assert data.dumps() == "<d>1</d>"
+        assert str(data) == "1"
+
+    def test_unpack_deep(self):
+        # should allow automatic unpacking of lead-wrappers down to the level of naked rows
+        # NOTE pysubyt does this for xml sources so we will need this
+        xdict = parse("<r0><r1><r2><r3><d><id>1</id><nm>Me</nm></d><d><id>2</id><nm>You</nm></d></r3></r2></r1></r0>")
+        data = xdict.unpack()
+        assert data.dumps() == "<d><id>1</id><nm>Me</nm></d><d><id>2</id><nm>You</nm></d>"
+        assert [str(n) for n in data] == ['<id>1</id><nm>Me</nm>', '<id>2</id><nm>You</nm>']
+
+        # todo find a way to automatically dig down to the level of the first list like pysubyt does --> ie down to ro.r1.r2.r3
+        xdict = parse("<r0><r1><r2><r3><d><id>1</id><nm>One</nm></d></r3></r2></r1></r0>")
+        data = xdict.unpack()
+        assert data.dumps() == "<d><id>1</id><nm>One</nm></d>"
+        assert [str(n) for n in data] == ['<id>1</id><nm>One</nm>']
 
     def test_roundtrip(self):
         inputs = [
@@ -117,33 +158,36 @@ class TestBasicCases(unittest.TestCase):
             assert xdict.dumps() == xml, f"failed roundtrip parse-serialize for {xml}"
 
     def test_mixed_content_model(self):
-        # and difference between innerXML versus text() node ???
-        pass
+        mixed_content = '<a href="http://example.org/">This</a> is <em>actual</em> mixed <strong>content</strong>'
+        mixed_xml = "<p>" + mixed_content + "</p>"
+        xdict = parse(mixed_xml)
+        assert str(xdict) == mixed_content
+        assert xdict.dumps() == mixed_xml
 
-    def test_whitespace(self):
-        # check expectations (if any) concerning whitespace
-        """ what is same and what is different between
-        <root><row><x>1</x></row></root>
-          and
-
-        <root><row><x> 1 </x></row></root>
-
-         and
-        <root>
+    def test_ignore_whitespace(self):
+        # three variants of the same xml -- and how xdict handles them
+        strict = "<root><row><x>1</x></row></root>"
+        spaced = "<root><row><x> 1 </x></row></root>"
+        pretty = """<root>
           <row>
             <x>
               1
             </x>
           </row>
-        </root>
-        """
-        pass
+        </root>"""
 
-    def test_attributes(self):
-        # check addressing test_attributes
-        xdict = parse("<r top='me'><child type='some'/></r>")
-        assert xdict['@top'] == 'me', "error accessing root attribute"
-        assert xdict.child['@type'] == 'some', "error accessing child attribute"
+        strict_xdict = parse(strict)
+        spaced_xdict = parse(spaced)
+        pretty_xdict = parse(pretty)
+
+        #  roundtripping keeps all whitespace
+        assert strict_xdict.dumps() == strict
+        assert spaced_xdict.dumps() == spaced
+        assert pretty_xdict.dumps() == pretty
+
+        # but value access is stripped
+        assert f"{strict_xdict.row.x}" == f"{spaced_xdict.row.x}"
+        assert f"{strict_xdict.row.x}" == f"{pretty_xdict.row.x}"
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
@@ -164,6 +208,7 @@ class TestBasicCases(unittest.TestCase):
         # https://docs.python.org/3/library/xml.etree.elementtree.html#parsing-xml-with-namespaces
         # https://github.com/python/cpython/blob/3.10/Lib/test/test_xml_etree.py#L1161 (tests)
         pass
+
 
 if __name__ == "__main__":
     run_single_test(__file__)

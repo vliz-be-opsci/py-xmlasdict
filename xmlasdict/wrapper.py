@@ -22,16 +22,27 @@ class Wrapper(Mapping):
     """ The core of the xmlasdict solution is a wrapper around etree nodes that fake some dict like look on their content
     """
 
-    def __init__ (self, node: ElementTree.Element):
-        assert isinstance(node, ElementTree.Element), f"Wrapper only designed to work with xml.etree.ElementTree.Element not '{type(node)}'"
+    def __init__(self, node: ElementTree.Element):
+        assert isinstance(node, ElementTree.Element), f"Wrapper only works with xml.etree.ElementTree.Element not '{type(node)}'"
         self._node = node
 
     def keys(self):
         """ returns a set of nested items (= attributes (@ prefixed) and nested unique tags)
         """
-        keys = set()  # todo consider how important it is these keyse should be kept in order? if so we should use a list in stead
+        return set() | self._attr_keys() | self._elm_keys()  # the union of attr_keys and elm_keys
+
+    def _attr_keys(self):
+        """ the set of available attribute names presented as __getitem__() keys
+        """
+        keys = set()
         for attr in self._node.attrib:
             keys.add('@' + attr)
+        return keys
+
+    def _elm_keys(self):
+        """ the set of nested element_tags presented as __getitem__() keys
+        """
+        keys = set()
         for child in self._node:
             keys.add(child.tag)
         return keys
@@ -39,7 +50,7 @@ class Wrapper(Mapping):
     def __str__(self):
         """ returns the xml content of the current node as a string
         """
-        return innerXML(self._node)
+        return innerXML(self._node).strip()
 
     def __bool__(self):
         """ returns true/false based on if the node has any content
@@ -52,6 +63,28 @@ class Wrapper(Mapping):
         """
         return xmlstr(self._node)
 
+    @property
+    def tag(self):
+        return self._node.tag
+
+    def unpack(self):
+        """ retrieves highest level row content down from a chain of (unuseful) single wrapper_nodes
+        """
+        log.debug(f"unpack at {self._node.tag}")
+        nested_tags = self._elm_keys()
+        if len(nested_tags) > 1 or len(nested_tags) == 0:   # if there are (or) mixed elements under this node (or) none
+            return IterWrapper([self])                      # then unpack ends here
+        # else actually (try) unpack if all nested elements are of the same flavour
+        content = Wrapper._getchildren(self._node, '*')
+        return content.unpack()
+
+    def unwrap(self):
+        """ turns the content into a native py representation (dict for Wrapper and list for IterWrapper)
+        """
+        # handle both nested element as well as str (attribute) returns
+        def unwrap(value): return value.unwrap() if isinstance(value, Wrapper) else value
+        return {k: unwrap(self[k]) for k in set(self)} if len(set(self)) > 0 else str(self)
+
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
         assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
@@ -60,7 +93,7 @@ class Wrapper(Mapping):
             attr_key = key[1:]
             return Wrapper._getattribute(self._node, attr_key)
         # else
-        #  TODO other special ones like #text #all
+        # TODO maybe consider other special ones like #text to grab the equivalent of xpath text() ??
         return Wrapper._getchildren(self._node, key)
 
     def __getattr__(self, key: str):
@@ -85,7 +118,7 @@ class Wrapper(Mapping):
             if len(node) > 1:
                 return IterWrapper(node)
             else:
-                node = node[0] # unpack the single element from the list
+                node = node[0]  # unpack the single element from the list
         # else - and also if we unpacked that single element !
         return Wrapper(node)
 
@@ -107,14 +140,12 @@ class IterWrapper(Wrapper):
     """ Wraps a list of elements
     """
     def __init__(self, node_list):
-        assert len(node_list) > 1, "Do not use IterWrapper for empty or single item lists."
+        assert len(node_list) > 0, "Do not use IterWrapper for empty lists."
         self._nodes = node_list  # original nodes
         self._wrappers = list(map(lambda n: Wrapper.build(n), node_list))  # nodes, ready wrapped
 
-
     def __str__(self):
         if len(self._nodes) == 1:
-            log.debug(f"unwrap first --> {self._nodes[0]}")
             return str(self._wrappers[0])
         else:
             return str(list(map(lambda w: str(w), self._wrappers)))
@@ -122,10 +153,7 @@ class IterWrapper(Wrapper):
     def __getitem__(self, index):
         log.debug(f"accessing [{index}] inside list[{len(self._nodes)}]")
         assert isinstance(index, (int, slice)), "IterWrapper is only subscriptable by int or slice"
-        log.debug(f"my self._nodes are {self._nodes}")
-        log.debug(f"my self._wrappers are {self._wrappers}")
         sublist = self._nodes[index]
-        log.debug(f"sublist at [{index}] has size={len(sublist)}")
         return Wrapper.build(sublist)
 
     def __iter__(self):
@@ -134,21 +162,17 @@ class IterWrapper(Wrapper):
     def __len__(self):
         return len(self._wrappers)
 
-    # todo consider __getitem__ to also support indices [0] and even slices [2:5]
-    # see --> https://stackoverflow.com/questions/33587459/which-exception-should-getitem-setitem-use-with-an-unsupported-slice-ste
+    def unpack(self):
+        return self  # the goal of unpack is to end when we are at the level if iterables
 
+    def unwrap(self):
+        """ turns the content into a native py representation (dict for Wrapper and list for IterWrapper)
+        """
+        return [w.unwrap() for w in self._wrappers]
 
-class DocumentWrapper(Wrapper):
-    pass
+    def dumps(self):
+        return ''.join([w.dumps() for w in self._wrappers])
 
-
-class ElementWrapper(Wrapper):
-    pass
-
-
-class AttributeWrapper(Wrapper):
-    pass
-
-
-class CommentsWrapper(Wrapper):
-    pass
+    @property
+    def tag(self):
+        return [n.tag for n in self._wrappers]

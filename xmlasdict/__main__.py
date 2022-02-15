@@ -10,8 +10,9 @@ log = logging.getLogger(__name__)
 def get_arg_parser():
     """ Defines the arguments to this script by using Python's [argparse](https://docs.python.org/3/library/argparse.html)
     """
-    parser = argparse.ArgumentParser(description='python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument(
         '-l',
