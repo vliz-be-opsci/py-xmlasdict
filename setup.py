@@ -47,8 +47,12 @@ with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 def required(sfx=''):
     """ Load the requirements from the requirements.txt file"""
-    with open(f"requirements{sfx}.txt") as f:
-        return [ln.strip() for ln in f.readlines() if not ln.startswith('-') and not ln.startswith('#') and ln.strip() != '']
+    reqs = []
+    try:
+        with open(f"requirements{sfx}.txt") as f:
+            reqs = [ln.strip() for ln in f.readlines() if not ln.startswith('-') and not ln.startswith('#') and ln.strip() != '']
+    finally:
+        return reqs
 
 
 requirements = required()
