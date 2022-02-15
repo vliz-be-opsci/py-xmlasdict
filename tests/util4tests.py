@@ -25,4 +25,4 @@ def run_single_test(testfile):
         f"Running tests in {testfile} " +
         "with -v(erbose) and -s(no stdout capturing) " +
         "and logging to stdout, level controlled by env var ${PYTEST_LOGCONF}")
-    sys.exit(pytest.main(["-v", "-s",  testfile]))
+    sys.exit(pytest.main(["-vv", "-s",  testfile]))
