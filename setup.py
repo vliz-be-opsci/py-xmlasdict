@@ -20,7 +20,8 @@ except ImportError:
 
 # Fixed Package meta-data.
 NAME = 'xmlasdict'
-VERSION = '0.0.1'
+VERSION = '0.0.3'
+RELEASE = '0.0.7'
 DESCRIPTION = 'python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)'
 URL = 'https://github.com/vliz-be-opsci/py-xmlasdict'
 EMAIL = 'marc.portier@gmail.com'
