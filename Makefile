@@ -40,4 +40,4 @@ docker-build:
 	@docker build . -t xmlasdict
 
 release: build
-	@${PYTHON} -m upload
+	@${PYTHON} setup.py upload
