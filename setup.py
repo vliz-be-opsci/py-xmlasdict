@@ -106,7 +106,7 @@ class UploadCommand(CommandBase):
 
         self.status('Tagging this build with {0}'.format(self.version_tag))
         try:
-            subprocess.run(['git tag {0}'.format(self.version_tag)], check = True)
+            subprocess.run(['git', 'tag', self.version_tag], check = True)
             self.status('Git push')
             os.system('git push')
         except subprocess.CalledProcessError:
