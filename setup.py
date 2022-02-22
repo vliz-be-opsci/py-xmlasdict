@@ -6,6 +6,7 @@
 
 import io
 import os
+import subprocess
 import sys
 import unittest
 from setuptools import find_packages, setup, Command
@@ -104,11 +105,13 @@ class UploadCommand(CommandBase):
         os.system('git commit -am "Setup.py commit for version {0}" '.format(self.version_tag))
 
         self.status('Tagging this build with {0}'.format(self.version_tag))
-        os.system('git tag {0}'.format(self.version_tag))
-
-        self.status('Git push')
-        os.system('git push')
-
+        try:
+            subprocess.run(['git tag {0}'.format(self.version_tag)], check = True)
+            self.status('Git push')
+            os.system('git push')
+        except subprocess.CalledProcessError:
+            self.status('Rolling back last commit...')
+            os.system('git reset --soft HEAD~1')        
         sys.exit()
 
 
