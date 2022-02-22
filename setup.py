@@ -101,8 +101,8 @@ class UploadCommand(CommandBase):
     def run(self):
         self.version_tag = 'v' + about['__version__']
         self.status('Commiting this build...')
-        os.system('git commit -m "Setup.py commit for version {0}" '.format(self.version_tag))
-        
+        os.system('git commit -am "Setup.py commit for version {0}" '.format(self.version_tag))
+
         self.status('Tagging this build with {0}'.format(self.version_tag))
         os.system('git tag {0}'.format(self.version_tag))
 
