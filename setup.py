@@ -96,20 +96,18 @@ class TestCommand(CommandBase):
 
 class UploadCommand(CommandBase):
     """Support setup.py upload."""
-    description = 'Build and publish the package.'
+    description = 'Tag the package.'
 
     def run(self):
-        try:
-            self.status('Removing previous builds')
-            rmtree(os.path.join(here, 'dist'))
-        except OSError:
-            pass
+        self.version_tag = 'v' + about['__version__']
+        self.status('Commiting this build...')
+        os.system('git commit -m "Setup.py commit for version {0}" '.format(self.version_tag))
+        
+        self.status('Tagging this build with {0}'.format(self.version_tag))
+        os.system('git tag {0}'.format(self.version_tag))
 
-        self.status('Building Source and Wheel (universal) distribution')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
-
-        self.status('Uploading the package to PyPi via Twine')
-        os.system('twine upload dist/*')
+        self.status('Git push')
+        os.system('git push')
 
         sys.exit()
 
