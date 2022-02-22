@@ -108,10 +108,12 @@ class UploadCommand(CommandBase):
         try:
             subprocess.run(['git', 'tag', self.version_tag], check = True)
             self.status('Git push')
-            os.system('git push')
+            os.system('git push --tags')
         except subprocess.CalledProcessError:
             self.status('Rolling back last commit...')
-            os.system('git reset --soft HEAD~1')        
+            os.system('git reset --soft HEAD~1')
+            # Delete old tag. This is not safe, needs to be done when pushing a new version only...
+            # os.system('git tag -d {0}'.format(self.version_tag)) 
         sys.exit()
 
 
