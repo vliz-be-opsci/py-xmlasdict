@@ -20,9 +20,7 @@ except ImportError:
 
 
 # Fixed Package meta-data.
-NAME = 'xmlasdict'
-VERSION = '0.0.3'
-RELEASE = '0.0.7'
+NAME = 'xmlasdict' 
 DESCRIPTION = 'python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)'
 URL = 'https://github.com/vliz-be-opsci/py-xmlasdict'
 EMAIL = 'marc.portier@gmail.com'
@@ -95,7 +93,7 @@ class TestCommand(CommandBase):
         exit(0 if result.wasSuccessful() else 1)
 
 
-class UploadCommand(CommandBase):
+class ReleaseCommand(CommandBase):
     """Support setup.py upload."""
     description = 'Tag the package.'
 
@@ -117,7 +115,7 @@ class UploadCommand(CommandBase):
         sys.exit()
 
 
-commands = {'upload': UploadCommand, 'test': TestCommand}
+commands = {'release': ReleaseCommand, 'test': TestCommand}
 
 
 # Conditionally add the BuildDoc command (if sphinx is available)
