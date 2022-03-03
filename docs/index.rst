@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to y_xmlasdict's documentation!
+Welcome to xmlasdict's documentation!
 ===================================================================
 
 .. toctree::
@@ -26,5 +26,5 @@ API Docs
 xmlasdict
 ****************************************
 
-.. automodule:: xmlasdict.wrapper
-    :members:
+.. automodule:: xmlasdict
+    :members: parse, Wrapper, IterWrapper

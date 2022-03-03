@@ -8,10 +8,10 @@
 """
 
 from .parser import parse
-from .wrapper import Wrapper
+from .wrapper import Wrapper, IterWrapper
 import logging
 
-__all__ = ['parse', 'Wrapper']
+__all__ = ['parse', 'Wrapper', 'IterWrapper']
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
