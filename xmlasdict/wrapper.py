@@ -105,11 +105,16 @@ class Wrapper(Mapping):
         return content.unpack()
 
     def unwrap(self):
-        """ Turns the content into a native py representation (dict for :class:`~Wrapper` and list for :class:`IterWrapper`)
+        """ Turns the content into a native py representation (dict)
         """
         # handle both nested element as well as str (attribute) returns
         def unwrap(value): return value.unwrap() if isinstance(value, Wrapper) else value
         return {k: unwrap(self[k]) for k in set(self)} if len(set(self)) > 0 else str(self)
+
+    def copy(self):
+        """ Turns the content into a native py representation (dict for :class:`~Wrapper` and list for :class:`IterWrapper`)
+        """
+        return self.unwrap()
 
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
@@ -203,7 +208,7 @@ class IterWrapper(Wrapper):
         return self  # the goal of unpack is to end when we are at the level if iterables
 
     def unwrap(self):
-        """ Turns the content into a native py representation (dict for Wrapper and list for IterWrapper)
+        """ Turns the content into a native py representation (list)
         """
         return [w.unwrap() for w in self._wrappers]
 
