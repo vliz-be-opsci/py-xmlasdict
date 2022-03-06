@@ -4,7 +4,7 @@ from .wrapper import Wrapper
 
 
 def parse(input: str):
-    """ Parses the xml into a xmlasdict structure that allows approaching the wrapped emltree as a (somewhat) regular dict
+    """ Parses the xml into a xmlasdict structure that allows approaching the wrapped emltree as a (somewhat) regular dict.
 
     :param input: actual XML content, or a file-path to an xml file to read
     :type input: str

@@ -1,7 +1,7 @@
 import unittest
 import os
 from xmlasdict import parse
-from util4tests import run_single_test, log
+from util4tests import run_single_test
 
 
 class TestTemplateFitness(unittest.TestCase):
@@ -22,7 +22,7 @@ class TestTemplateFitness(unittest.TestCase):
     <child2>text</child2>
     <child3>example@email.org</child3>""", "should keep whitespace and serialize the mixed content"
         assert f"{_.Element1.C.para}" == "Something a <bit> more unusual.", "CDATA content should be expanded"
-        assert f"{_.Element1.C}" == "<para>Something a &lt;bit&gt; more unusual.</para>", "Currently we do not support CDATA round-trip"
+        assert f"{_.Element1.C}" == "<para>Something a &lt;bit&gt; more unusual.</para>", "CDATA round-trip is not supported"
 
         expected_D_child1 = list()
         D_names = ['A', 'B']
@@ -38,18 +38,13 @@ class TestTemplateFitness(unittest.TestCase):
 
         assert [f"{n}" for d in _.Element1.D for n in d.D_child1 if str(d.D_child_source) == 'ASFA'] == ['keywordA1', 'keywordA2']
 
-
-        assert f"{_.Element1.E.para}" == 'Start of sentence <ulink url="http://example.org/path"><Ee> Example link</Ee></ulink> and now there is the end of the sentence.'
+        expected = ''.join(('Start of sentence <ulink url="http://example.org/path">',
+                           '<Ee> Example link</Ee></ulink> and now there is the end of the sentence.'))
+        assert f"{_.Element1.E.para}" == expected
         assert f"{_.Element1.E.para.ulink['@url']}" == 'http://example.org/path'
-
 
         assert f"{_.Element1.F.F_child1[0].F_child1_elements.Elem1}" == ""
         assert not(_.Element1.F.F_child1[0].F_child1_elements.Elem1)
-
-
-
-
-
 
 
 if __name__ == '__main__':

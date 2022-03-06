@@ -10,7 +10,6 @@ import subprocess
 import sys
 import unittest
 from setuptools import find_packages, setup, Command
-from shutil import rmtree
 
 # conditionally import to allow setup.py install introduce requirements
 try:
@@ -20,7 +19,7 @@ except ImportError:
 
 
 # Fixed Package meta-data.
-NAME = 'xmlasdict' 
+NAME = 'xmlasdict'
 DESCRIPTION = 'python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)'
 URL = 'https://github.com/vliz-be-opsci/py-xmlasdict'
 EMAIL = 'marc.portier@gmail.com'
@@ -104,14 +103,14 @@ class ReleaseCommand(CommandBase):
 
         self.status('Tagging this build with {0}'.format(self.version_tag))
         try:
-            subprocess.run(['git', 'tag', self.version_tag], check = True)
+            subprocess.run(['git', 'tag', self.version_tag], check=True)
             self.status('Git push')
             os.system('git push --tags')
         except subprocess.CalledProcessError:
             self.status('Rolling back last commit...')
             os.system('git reset --soft HEAD~1')
             # Delete old tag. This is not safe, needs to be done when pushing a new version only...
-            # os.system('git tag -d {0}'.format(self.version_tag)) 
+            # os.system('git tag -d {0}'.format(self.version_tag))
         sys.exit()
 
 
