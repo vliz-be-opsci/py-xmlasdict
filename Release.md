@@ -20,12 +20,15 @@ These are the basic steps to follow in order to publish a new version of this co
     - reads the python code version from _\_\_version\_\_.py_,
     - creates a git tag based off the python version,
     - commits, tags, and pushes to the project repo (with rollbacks if fail)
- - Go to the "releases" page on github.com (https://github.com/(my_org)/(my_project)/releases) and create new release:
+ - Go to the "releases" page on github.com (https://github.com/vliz-be-opsci/py-xmlasdict/releases) and create new release:
     - Select "Draft New Release" 
     - Select tag created in previous step, 
     - Leaving the Release Title blank will default to the tag name
     - Fill in release notes 
     - and hit "Publish Release"
+  - Check up the release availability at https://pypi.org/project/xmlasdict/
+    - You might want to follow up on the succesful execution of the release-triggered action at https://github.com/vliz-be-opsci/py-xmlasdict/actions
+  - Eventually the docs should be up on https://xmlasdict.readthedocs.io/en/latest/
 
 Publishing the release will cause the _/.github/workflows/python-publish.yml_ action to start. This will run through the make init, check, docu, and build steps before publishing the new version to pip using the supplied pip secret.
 
