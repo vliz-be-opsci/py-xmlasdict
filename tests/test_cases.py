@@ -223,7 +223,15 @@ class TestCases(unittest.TestCase):
     def test_unpack_limiting(self):
         """ Specific test for [side-issue of #4](https://github.com/vliz-be-opsci/py-xmlasdict/issues/4)
         """
-        pass
+        xml="<root><wrap><item><name>Me</name></item></wrap></root>"
+        xdict = parse(xml)
+
+        assert xdict.tag == 'root'
+        lowest =  xdict.unpack()
+        assert lowest.tag == 'name'
+        targetted = xdict.unpack(tag='item')
+        assert targetted.tag = 'item'
+
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes

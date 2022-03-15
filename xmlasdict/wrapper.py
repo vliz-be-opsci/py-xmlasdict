@@ -93,14 +93,18 @@ class Wrapper(Mapping):
         """
         return self._node.tag
 
-    def unpack(self):
+    def unpack(self, tag: str = None):
         """ Retrieves the highest-level row content down from a chain of (un-useful) single wrapper_nodes.
         This is a convenience method allowing one to easily descend down into any single-wrapping tags
         down to the actual repeated content.
+
+        :param tag: stop unwrapping if the tag-name matches
         """
         log.debug(f"unpack at {self._node.tag}")
         nested_tags = self._elm_keys()
-        if len(nested_tags) > 1 or len(nested_tags) == 0:   # if there are (or) mixed elements under this node (or) none
+
+        # if there are (or) mixed elements under this node (or) none (or) the tag-name matches the requested param tag
+        if len(nested_tags) > 1 or len(nested_tags) == 0 or tag == self._node.tag:
             return IterWrapper([self])                      # then unpack ends here
         # else actually (try) unpack if all nested elements are of the same flavour
         content = Wrapper._getchildren(self._node, '*')
@@ -211,7 +215,7 @@ class IterWrapper(Wrapper):
     def __len__(self):
         return len(self._wrappers)
 
-    def unpack(self):
+    def unpack(self, tag: str = None):
         """ Returns self, as by nature the IterWrapper is the level not to be further unpacked.
         """
         return self  # the goal of unpack is to end when we are at the level if iterables
