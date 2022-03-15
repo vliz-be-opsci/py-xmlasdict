@@ -159,7 +159,7 @@ class Wrapper(Mapping):
             return node if not force_list else IterWrapper([node])
         # else
         if isinstance(node, list):
-            assert len(node) > 0, "cannot wrap empty node lists"
+            assert len(node) > 0 or force_list, "cannot wrap empty node lists unless force_list == True"
             if len(node) > 1 or force_list == True:
                 return IterWrapper(node) if len(node) > 0 else []
             else:
@@ -170,9 +170,7 @@ class Wrapper(Mapping):
     @staticmethod
     def _getchildren(node, key: str, force_list: bool = False):
         found_elms = node.findall(key)
-        if len(found_elms) == 0:
-            if force_list:
-                return []  # enforce-list mode prefers an empty list over an error
+        if len(found_elms) == 0 and not force_list: # enforce-list mode prefers an empty list over an error
             raise AttributeError(f"Current node has no child with tag '{key}'")
         return Wrapper.build(found_elms, force_list)
 
