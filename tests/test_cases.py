@@ -189,6 +189,42 @@ class TestCases(unittest.TestCase):
         assert f"{strict_xdict.row.x}" == f"{spaced_xdict.row.x}"
         assert f"{strict_xdict.row.x}" == f"{pretty_xdict.row.x}"
 
+    def test_list_enforcing(self):
+        """ Specific test for [issue #4](https://github.com/vliz-be-opsci/py-xmlasdict/issues/4)
+        """
+        xmlmulti = """
+            <rows>
+                <item a="A1"><b>B1</b><c>C1</c></item>
+                <item a="A2"><b>B2</b><c>C2</c></item>
+            </rows>
+        """
+        xmlsingle = """
+            <rows>
+                <item a="A1"><b>B1</b><c>C1</c></item>
+            </rows>
+        """
+        xmlnone = """
+            <rows>
+                <no_item_here />
+            </rows>
+        """
+        xmls = dict(multi=xmlmulti, single=xmlsingle, none=xmlnone)
+        expected_count = len(xmls)
+        for name, xml in xmls.items():
+            expected_count -= 1
+            xdict = parse(xml) # parse(xml.strip())
+            count = 0
+            for item in xdict['item[]']:
+                count += 1
+                assert item.tag == 'item', f"wrong tag in case {name}"
+            assert count == expected_count, f"wrong count in case {name}"
+
+
+    def test_unpack_limiting(self):
+        """ Specific test for [side-issue of #4](https://github.com/vliz-be-opsci/py-xmlasdict/issues/4)
+        """
+        pass
+
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
 

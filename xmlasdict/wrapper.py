@@ -121,13 +121,19 @@ class Wrapper(Mapping):
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
         assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
+        force_list=False
         # @ prefix indicates looking up attributes
         if key[0] == '@':
             attr_key = key[1:]
             return Wrapper._getattribute(self._node, attr_key)
         # else
+
+        # the [] suffix indicates we want a forced list return
+        if key[-2:] == '[]':
+            key = key[:-2]  # truncate the key
+            force_list = True
         # TODO maybe consider other special ones like #text to grab the equivalent of xpath text() ??
-        return Wrapper._getchildren(self._node, key)
+        return Wrapper._getchildren(self._node, key, force_list)
 
     def __getattr__(self, key: str):
         log.debug(f"accessing .{key} inside tag {self._node.tag}")
@@ -141,31 +147,34 @@ class Wrapper(Mapping):
         return len(self.keys())
 
     @staticmethod
-    def build(node):
+    def build(node, force_list: bool = False):
         """ Actually "builds" a :class:`~Wrapper` or :class:`~IterWrapper` by introspecting the passed node
         Normally one avoids using this to build your own wrappers in favour of just using the :func:`~xmlasdict.parse` method.
 
-        :param node: can be a ~Wrapper that doesn't need further wrapping or an ElementTree.node or a list of those
+        :param node: can be a :class:`~Wrapper` that doesn't need further wrapping or an ElementTree.node or a list of those
+        :param force_list: enforce returning a list of nodes (i.e an :class:`~IterWrapper`)
         """
         assert node is not None, "cannot wrap None"
         if isinstance(node, Wrapper):  # the wrapper is already there!
-            return node
+            return node if not force_list else IterWrapper([node])
         # else
         if isinstance(node, list):
             assert len(node) > 0, "cannot wrap empty node lists"
-            if len(node) > 1:
-                return IterWrapper(node)
+            if len(node) > 1 or force_list == True:
+                return IterWrapper(node) if len(node) > 0 else []
             else:
                 node = node[0]  # unpack the single element from the list
         # else - and also if we unpacked that single element !
         return Wrapper(node)
 
     @staticmethod
-    def _getchildren(node, key: str):
+    def _getchildren(node, key: str, force_list: bool = False):
         found_elms = node.findall(key)
         if len(found_elms) == 0:
+            if force_list:
+                return []  # enforce-list mode prefers an empty list over an error
             raise AttributeError(f"Current node has no child with tag '{key}'")
-        return Wrapper.build(found_elms)
+        return Wrapper.build(found_elms, force_list)
 
     @staticmethod
     def _getattribute(node, attr_key: str):
