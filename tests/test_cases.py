@@ -228,9 +228,11 @@ class TestCases(unittest.TestCase):
 
         assert xdict.tag == 'root'
         lowest =  xdict.unpack()
-        assert lowest.tag == 'name'
+        for n in lowest:
+            assert n.tag == 'name'
         targetted = xdict.unpack(tag='item')
-        assert targetted.tag = 'item'
+        for t in targetted:
+            assert t.tag == 'item'
 
 
     def test_namespaces(self):

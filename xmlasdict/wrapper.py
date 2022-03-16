@@ -100,15 +100,17 @@ class Wrapper(Mapping):
 
         :param tag: stop unwrapping if the tag-name matches
         """
-        log.debug(f"unpack at {self._node.tag}")
-        nested_tags = self._elm_keys()
+        nested_tags = self._elm_keys()  # remeber this is a set of (unique) child elm keys
+        mytag = self._node.tag
+
+        log.debug(f"unpacking {mytag} to {nested_tags} and stopping at {tag}")
 
         # if there are (or) mixed elements under this node (or) none (or) the tag-name matches the requested param tag
-        if len(nested_tags) > 1 or len(nested_tags) == 0 or tag == self._node.tag:
+        if len(nested_tags) > 1 or len(nested_tags) == 0 or tag == mytag:
             return IterWrapper([self])                      # then unpack ends here
         # else actually (try) unpack if all nested elements are of the same flavour
         content = Wrapper._getchildren(self._node, '*')
-        return content.unpack()
+        return content.unpack(tag=tag)
 
     def unwrap(self):
         """ Turns the content into a native py representation (dict).
