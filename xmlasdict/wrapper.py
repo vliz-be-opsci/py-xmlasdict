@@ -127,7 +127,7 @@ class Wrapper(Mapping):
     def __getitem__(self, key: str):
         log.debug(f"accessing [{key}] inside tag {self._node.tag}")
         assert key is not None and isinstance(key, str) and len(key) > 0, f"Cannot get attribute with invalid key '{key}'"
-        force_list=False
+        force_list = False
         # @ prefix indicates looking up attributes
         if key[0] == '@':
             attr_key = key[1:]
@@ -166,7 +166,7 @@ class Wrapper(Mapping):
         # else
         if isinstance(node, list):
             assert len(node) > 0 or force_list, "cannot wrap empty node lists unless force_list == True"
-            if len(node) > 1 or force_list == True:
+            if len(node) > 1 or force_list is True:
                 return IterWrapper(node) if len(node) > 0 else []
             else:
                 node = node[0]  # unpack the single element from the list
@@ -176,7 +176,7 @@ class Wrapper(Mapping):
     @staticmethod
     def _getchildren(node, key: str, force_list: bool = False):
         found_elms = node.findall(key)
-        if len(found_elms) == 0 and not force_list: # enforce-list mode prefers an empty list over an error
+        if len(found_elms) == 0 and not force_list:  # enforce-list mode prefers an empty list over an error
             raise AttributeError(f"Current node has no child with tag '{key}'")
         return Wrapper.build(found_elms, force_list)
 

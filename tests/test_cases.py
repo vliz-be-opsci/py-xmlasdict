@@ -212,28 +212,26 @@ class TestCases(unittest.TestCase):
         expected_count = len(xmls)
         for name, xml in xmls.items():
             expected_count -= 1
-            xdict = parse(xml) # parse(xml.strip())
+            xdict = parse(xml)  # parse(xml.strip())
             count = 0
             for item in xdict['item[]']:
                 count += 1
                 assert item.tag == 'item', f"wrong tag in case {name}"
             assert count == expected_count, f"wrong count in case {name}"
 
-
     def test_unpack_limiting(self):
         """ Specific test for [side-issue of #4](https://github.com/vliz-be-opsci/py-xmlasdict/issues/4)
         """
-        xml="<root><wrap><item><name>Me</name></item></wrap></root>"
+        xml = "<root><wrap><item><name>Me</name></item></wrap></root>"
         xdict = parse(xml)
 
         assert xdict.tag == 'root'
-        lowest =  xdict.unpack()
+        lowest = xdict.unpack()
         for n in lowest:
             assert n.tag == 'name'
         targetted = xdict.unpack(tag='item')
         for t in targetted:
             assert t.tag == 'item'
-
 
     def test_namespaces(self):
         # check what to do about namespace declarations and prefixes
