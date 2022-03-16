@@ -2,6 +2,7 @@
 
 .. module:: xmlasdict
     :synopsis: python library to read xml DOM trees as dicts (with iter and gettattribute behaviour)
+    :noindex:
 
 .. moduleauthor:: Marc Portier <marc.portier@gmail.com>
 
