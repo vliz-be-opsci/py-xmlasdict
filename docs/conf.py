@@ -26,7 +26,7 @@ author = 'Marc Portier'
 
 
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = os.path.abspath('..')
 about = {}
 with io.open(os.path.join(here, project, '__version__.py')) as f:
     exec(f.read(), about)
