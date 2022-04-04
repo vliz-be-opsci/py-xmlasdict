@@ -32,10 +32,10 @@ with io.open(os.path.join(here, project, '__version__.py')) as f:
     exec(f.read(), about)
 
 # The short X.Y version
-# version = 'v0.0.0'
+version = about['__version__']
 
 # The full version, including alpha/beta/rc tags
-# release = 'v0.0.0'
+release = about['__version__']
 
 
 # -- General configuration ---------------------------------------------------
