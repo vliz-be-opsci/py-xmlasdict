@@ -10,12 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import io
-import sys
-sys.path.insert(0, os.path.abspath('..'))
 import xmlasdict
-
 
 
 # -- Project information -----------------------------------------------------
@@ -25,17 +20,11 @@ copyright = '2020, Marc Portier'
 author = 'Marc Portier'
 
 
-
-here = os.path.abspath('..')
-about = {}
-with io.open(os.path.join(here, project, '__version__.py')) as f:
-    exec(f.read(), about)
-
 # The short X.Y version
-version = about['__version__']
+version = xmlasdict.__version__
 
 # The full version, including alpha/beta/rc tags
-release = about['__version__']
+release = xmlasdict.__version__
 
 
 # -- General configuration ---------------------------------------------------
